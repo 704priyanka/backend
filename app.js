@@ -4,9 +4,13 @@ const path = require("path");
 const cookieParser = require("cookie-parser");
 const logger = require("morgan");
 const connect = require("./config/database");
-const indexRouter = require("./routes/studentRoutes");
+const StudentRoutes = require("./routes/studentRoutes");
 const usersRouter = require("./routes/users");
-
+const AgentRoutes = require("./routes/agentRoutes");
+const CountriesRoutes = require("./routes/countries");
+const Mailer = require("./routes/mailer");
+const Reviews = require("./routes/reviews");
+const Applications = require("./routes/applications");
 var app = express();
 
 // view engine setup
@@ -20,7 +24,6 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
-app.use("/", indexRouter);
 app.use("/users", usersRouter);
 app.use("/student", StudentRoutes);
 app.use("/agent", AgentRoutes);
