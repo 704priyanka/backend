@@ -4,10 +4,10 @@ const path = require("path");
 const cookieParser = require("cookie-parser");
 const logger = require("morgan");
 const connect = require("./config/database");
-const StudentRoutes = require("./routes/studentRoutes");
+const studentRoutes = require("./routes/studentRoutes");
 const usersRouter = require("./routes/users");
-const AgentRoutes = require("./routes/agentRoutes");
-const CountriesRoutes = require("./routes/countries");
+const agentRoutes = require("./routes/agentRoutes");
+const countriesRoutes = require("./routes/countries");
 const Mailer = require("./routes/mailer");
 const Reviews = require("./routes/reviews");
 const Applications = require("./routes/applications");
@@ -25,12 +25,13 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
 app.use("/users", usersRouter);
-app.use("/student", StudentRoutes);
-app.use("/agent", AgentRoutes);
-app.use("/countries", CountriesRoutes);
+app.use("/student", studentRoutes);
+app.use("/agent", agentRoutes);
+app.use("/countries", countriesRoutes);
 app.use("/agent/reviews", Reviews);
 app.use("/application", Applications);
 app.use("/callback", Mailer);
+app.use("/mailer", Mailer);
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
   next(createError(404));
