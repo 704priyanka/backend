@@ -23,6 +23,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
+app.use(function (err, req, res, next) {
+  res.status(err.status || 500).json(response.error(err.status || 500));
+});
 
 app.use("/users", usersRouter);
 app.use("/student", studentRoutes);
@@ -31,7 +34,13 @@ app.use("/countries", countriesRoutes);
 app.use("/agent/reviews", Reviews);
 app.use("/application", Applications);
 app.use("/callback", Mailer);
-app.use("/mailer", Mailer);
+
+app.get("*", (req, res) => {
+  res.status(404).send({ message: "Incorrect api route hit" });
+});
+app.post("*", (req, res) => {
+  res.status(404).send({ message: "Incorrect api route hit" });
+});
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
   next(createError(404));

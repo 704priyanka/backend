@@ -1,7 +1,6 @@
 const Reviews = require("../models/reviews");
 const Agent = require("../models/agent");
 const Student = require("../models/student");
-const reviews = require("../models/reviews");
 
 //create review by student
 
