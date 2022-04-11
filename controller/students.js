@@ -2,6 +2,10 @@ const Student = require("../models/student");
 const Agent = require("../models/agent");
 const Applcation = require("../models/applications");
 const Documents = require("../models/documents");
+const student = require("../models/student");
+const documents = require("../models/documents");
+const express = require("express");
+const router = express.Router();
 
 var create = async function (req, res) {
   let body = req.body;
@@ -112,4 +116,110 @@ var create = async function (req, res) {
     });
 };
 
-module.exports = { create };
+const createDoc = async (req, res) => {
+  try {
+    console.log(req.body);
+    const { studentID, documents } = req.body;
+
+    if (!studentID) {
+      throw "student id missing";
+    }
+    const studentData = await Student.findOne({ studentID: studentID });
+    if (!studentData) {
+      //check student exist or not
+      throw "Student not Found";
+    } else {
+      if (!documents.link || !documents.name || !documents.type) {
+        //document fields ok or not
+        throw "One of important field in document missing";
+      }
+      //creating new document
+      let newDoc = new Documents({
+        link: documents.link,
+        name: documents.name,
+        type: documents.type,
+      });
+      //add into document database
+      newDoc.save((err, result) => {
+        if (result) {
+          studentData.documents.push(result); //adding documents in student dataase
+          studentData.save((err, result) => {
+            if (err) {
+              throw err;
+            } else {
+              res.status(200).send("data updated");
+            }
+          });
+        } else {
+          throw err;
+        }
+      });
+    }
+  } catch (e) {
+    res.status(500).send(e);
+  }
+};
+
+//update documents
+
+const updateDoc = (req, res) => {
+  try {
+    const { studentID, documentID, name } = req.body;
+    if (!studentID || !documentID || !name) {
+      throw "One of Important field missing studentID , DocumentId or Name";
+    }
+    Documents.findOneAndUpdate(
+      { _id: documentID },
+      { name },
+      { new: true },
+      (err, result) => {
+        if (err) {
+          throw err;
+        } else {
+          res
+            .status(200)
+            .send({ message: "document updated successfully", data: result });
+        }
+      }
+    );
+  } catch (e) {
+    res.status(500).send(e);
+  }
+};
+
+//for deleting a document
+
+const deleteDoc = async (req, res) => {
+  try {
+    const { studentID, documentID } = req.body;
+    //check if data is correct
+    if (!studentID || !documentID) {
+      throw "studentID or DocumentID missing";
+    }
+    const studentData = await student.findOne({ studentID: studentID }); //find student
+    if (!studentData) {
+      throw "student with studentID doesnt exist";
+    } else {
+      studentData.documents = studentData.documents.filter(
+        //filter student docs to remove required doc
+        (doc) => doc._id != documentID
+      );
+      studentData.save((err, result) => {
+        if (err) {
+          throw err;
+        }
+      });
+      documents.findByIdAndRemove(documentID, (err, result) => {
+        if (err) {
+          throw err;
+        } else {
+          res.status(200).send("deleted sucessfully");
+        }
+      });
+    }
+  } catch (e) {
+    res.status(500).send(e);
+  }
+};
+
+module.exports = { create, createDoc, updateDoc, deleteDoc };
