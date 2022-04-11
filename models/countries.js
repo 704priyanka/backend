@@ -6,6 +6,10 @@ const CountrySchema = new mongoose.Schema({
     required: true,
     unique: true,
   },
+  _id: {
+    type: String,
+  },
+
   countryImages: [
     {
       url: {
@@ -15,13 +19,9 @@ const CountrySchema = new mongoose.Schema({
       description: {
         type: String,
       },
+      _id: false,
     },
   ],
-  _id: {
-    required: true,
-    unique: true,
-    type: String,
-  },
 });
 
 /////////////////////////////////////////////////////
