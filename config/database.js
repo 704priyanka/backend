@@ -4,10 +4,13 @@ const mongoose = require("mongoose");
 //=======================================
 const connect = () =>
   mongoose
-    .connect("mongodb://localhost/project", {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    })
+    .connect(
+      "mongodb+srv://kartikey-admin:kartikey@blog.dbo4a.mongodb.net/myFirstDatabase?retryWrites=true&w=majority",
+      {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+      }
+    )
     .then(() => console.log("DATABASE CONNECTED..."))
     .catch((err) => console.log(err));
 //=======================================

@@ -36,7 +36,7 @@ const create = async function (req, res) {
     if (!studentID || !agentID) {
       return res.status(400).send({
         message: "Important field missing",
-        fieldName: "StudentID or AgnetID",
+        fieldName: "StudentID or AgentID",
       });
     }
     if (!universityName || !location || !location.city || !location.country) {
