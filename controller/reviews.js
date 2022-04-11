@@ -17,68 +17,60 @@ const review = async function (req, res) {
   };
 
   //find student exists or not
-  const studentData = await Student.findOne({ studentID: studentID });
-  if (studentData) {
-    console.log(studentData);
-  } else {
-    console.log("Not Found");
-  }
-  if (studentData) {
-    const review = await Reviews.findOne({
-      agent: agentID,
-      reviewerID: studentID,
+  Student.findOne({ studentID: studentID })
+    .then((doc) => {
+      //doc is student data
+      if (!doc) {
+        return res.status(400).send({ message: "STUDENT DATA NOT FOUND" });
+      }
+    })
+    .catch((err) => {
+      return res.status(500).json({ errors: err.message });
     });
-    if (review) {
-      return res.status(500).send("Student has reviewed");
-    } else {
-      const review = Reviews.create(newReview);
-      console.log("log");
+
+  //adding review in the agent collection
+  Reviews.findOne(
+    { agent: agentID, reviewerID: studentID },
+    (errorA, review) => {
+      if (errorA) {
+        return res.status(500).json({ errors: errorA.message });
+      } else if (review) {
+        return res.status(500).json({
+          message: "Already student has a review for same mentor",
+          review,
+        });
+      } else {
+        Reviews.create(newReview, (errorB, reviewCreated) => {
+          if (errorB) {
+            return res.status(500).json({ errors: errorB.message });
+          } else if (reviewCreated) {
+            // Add it to the agent dataBase
+            Agent.findOne({ agentID: agentID }, (errorC, foundAgent) => {
+              if (errorC) {
+                return res.status(500).json({ errors: errorC.message });
+              } else {
+                //  Add to agentreviews
+                foundAgent.reviews.push(reviewCreated._id);
+                let reviewStars;
+                if (foundAgent.reviewAverage === 0) {
+                  reviewStars = stars;
+                } else {
+                  reviewStars = (foundAgent.reviewAverage + stars) / 2;
+                }
+
+                foundAgent.reviewAverage = reviewStars;
+                foundAgent.save();
+              }
+            });
+            return res.status(201).send({
+              message: "Successfully added a new review",
+              data: reviewCreated,
+            });
+          }
+        });
+      }
     }
-  }
-
-  // //adding review in the agent collection
-  // Reviews.findOne(
-  //   { agent: agentID, reviewerID: studentID },
-  //   (errorA, review) => {
-  //     if (errorA) {
-  //       return res.status(500).json({ errors: errorA.message });
-  //     } else if (review) {
-  //       return res.status(500).json({
-  //         message: "Already student has a review for same mentor",
-  //         review,
-  //       });
-  //     } else {
-  //       Reviews.create(newReview, (errorB, reviewCreated) => {
-  //         if (errorB) {
-  //           return res.status(500).json({ errors: errorB.message });
-  //         } else if (reviewCreated) {
-  //           // Add it to the agent dataBase
-  //           Agent.findOne({ agentID: agentID }, (errorC, foundAgent) => {
-  //             if (errorC) {
-  //               return res.status(500).json({ errors: errorC.message });
-  //             } else {
-  //               //  Add to agentreviews
-  //               foundAgent.reviews.push(reviewCreated._id);
-  //               let reviewStars;
-  //               if (foundAgent.reviewAverage === 0) {
-  //                 reviewStars = stars;
-  //               } else {
-  //                 reviewStars = (foundAgent.reviewAverage + stars) / 2;
-  //               }
-
-  //               foundAgent.reviewAverage = reviewStars;
-  //               foundAgent.save();
-  //             }
-  //           });
-  //           return res.status(201).send({
-  //             message: "Successfully added a new review",
-  //             data: reviewCreated,
-  //           });
-  //         }
-  //       });
-  //     }
-  //   }
-  // );
+  );
 };
 
 const displayReview = async function (req, res) {
