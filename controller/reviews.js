@@ -1,6 +1,7 @@
 const Reviews = require("../models/reviews");
 const Agent = require("../models/agent");
 const Student = require("../models/student");
+const student = require("../models/student");
 
 //create review by student
 
@@ -17,24 +18,21 @@ const review = async function (req, res) {
   };
 
   //find student exists or not
-  Student.findOne({ studentID: studentID })
-    .then((doc) => {
-      //doc is student data
-      if (!doc) {
-        return res.status(400).send({ message: "STUDENT DATA NOT FOUND" });
-      }
-    })
-    .catch((err) => {
-      return res.status(500).json({ errors: err.message });
-    });
 
-  //adding review in the agent collection
-  Reviews.findOne(
-    { agent: agentID, reviewerID: studentID },
-    (errorA, review) => {
-      if (errorA) {
-        return res.status(500).json({ errors: errorA.message });
-      } else if (review) {
+  const studentFound = await Student.findOne({ studentID });
+  if (!studentFound) {
+    res.status(200).send({ message: "Student not found" });
+  } else if (studentFound) {
+    //agent student exists or not
+    const agentFound = await Agent.findOne({ agentID });
+    if (!agentFound) {
+      return res.status(200).send({ message: "Agent not found" });
+    } else {
+      //adding review in the agent collection
+      const review = await Reviews.findOne({
+        $and: [{ agent: agentID }, { reviewerID: studentID }],
+      });
+      if (review) {
         return res.status(500).json({
           message: "Already student has a review for same mentor",
           review,
@@ -45,23 +43,19 @@ const review = async function (req, res) {
             return res.status(500).json({ errors: errorB.message });
           } else if (reviewCreated) {
             // Add it to the agent dataBase
-            Agent.findOne({ agentID: agentID }, (errorC, foundAgent) => {
-              if (errorC) {
-                return res.status(500).json({ errors: errorC.message });
-              } else {
-                //  Add to agentreviews
-                foundAgent.reviews.push(reviewCreated._id);
-                let reviewStars;
-                if (foundAgent.reviewAverage === 0) {
-                  reviewStars = stars;
-                } else {
-                  reviewStars = (foundAgent.reviewAverage + stars) / 2;
-                }
 
-                foundAgent.reviewAverage = reviewStars;
-                foundAgent.save();
-              }
-            });
+            //  Add to agent:reviews
+            agentFound.reviews.push(reviewCreated._id);
+            let reviewStars;
+            if (agentFound.reviewAverage === 0) {
+              reviewStars = stars;
+            } else {
+              reviewStars = (agentFound.reviewAverage + stars) / 2;
+            }
+
+            agentFound.reviewAverage = reviewStars;
+            agentFound.save();
+
             return res.status(201).send({
               message: "Successfully added a new review",
               data: reviewCreated,
@@ -70,7 +64,7 @@ const review = async function (req, res) {
         });
       }
     }
-  );
+  }
 };
 
 const displayReview = async function (req, res) {
@@ -81,15 +75,21 @@ const displayReview = async function (req, res) {
       return res.status(500).json({ errors: error.message });
     } else {
       const noOfReviews = foundReviews.length;
+      const reviews = new Array();
       foundReviews.forEach((review) => {
         if (review.reviewerID == studentID) {
           studentHasReviewed = true;
+
+          reviews.push({ review, studentHasReviewed: studentHasReviewed });
+        } else {
+          studentHasReviewed = false;
+          reviews.push({ review, studentHasReviewed: studentHasReviewed });
         }
       });
+
       return res.status(200).send({
         message: `Retrieved ${noOfReviews} Reviews`,
-        data: foundReviews,
-        studentHasReviewed,
+        data: reviews,
       });
     }
   });
