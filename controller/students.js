@@ -3,8 +3,8 @@ const Agent = require("../models/agent");
 const Applcation = require("../models/applications");
 const Documents = require("../models/documents");
 const student = require("../models/student");
-const documents = require("../models/documents");
 const express = require("express");
+const { response } = require("express");
 const router = express.Router();
 
 var create = async function (req, res) {
@@ -145,18 +145,18 @@ const createDoc = async (req, res) => {
           studentData.documents.push(result); //adding documents in student dataase
           studentData.save((err, result) => {
             if (err) {
-              throw err;
+              res.status(500).send(err);
             } else {
               res.status(200).send("data updated");
             }
           });
         } else {
-          throw err;
+          res.status(500).send(err);
         }
       });
     }
   } catch (e) {
-    res.status(500).send(e);
+    res.status(404).send(e);
   }
 };
 
@@ -174,7 +174,7 @@ const updateDoc = (req, res) => {
       { new: true },
       (err, result) => {
         if (err) {
-          throw err;
+          res.status(500).send(err);
         } else {
           res
             .status(200)
@@ -183,7 +183,7 @@ const updateDoc = (req, res) => {
       }
     );
   } catch (e) {
-    res.status(500).send(e);
+    res.status(404).send(e);
   }
 };
 
@@ -209,16 +209,24 @@ const deleteDoc = async (req, res) => {
           throw err;
         }
       });
-      documents.findByIdAndRemove(documentID, (err, result) => {
+
+      Documents.findByIdAndDelete(documentID, (err, document) => {
         if (err) {
-          throw err;
+          res.status(500).send(err);
+        }
+        if (document) {
+          const response = {
+            message: "deleted successfully",
+            data: document,
+          };
+          res.status(200).send(response);
         } else {
-          res.status(200).send("deleted sucessfully");
+          res.status(404).send("Document doesnt exist");
         }
       });
     }
   } catch (e) {
-    res.status(500).send(e);
+    res.status(404).send(e);
   }
 };
 
