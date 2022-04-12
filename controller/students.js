@@ -1,0 +1,233 @@
+const Student = require("../models/student");
+const Agent = require("../models/agent");
+const Applcation = require("../models/applications");
+const Documents = require("../models/documents");
+const student = require("../models/student");
+const express = require("express");
+const { response } = require("express");
+const router = express.Router();
+
+var create = async function (req, res) {
+  let body = req.body;
+
+  const { studentID, phone, countryLookingFor } = req.body;
+  if (!studentID || !phone || !countryLookingFor) {
+    return res.status(400).send({
+      message: `One of the imported fields is missing phone:${!phone} studnetID:${!studentID} countryLookingFor:${!countryLookingFor}`,
+    });
+  }
+
+  //find student id already registered as agent
+  Agent.findOne({ agentID: studentID }, (error, agentFound) => {
+    if (error) {
+      return res.status(500).send({ error1: error.message });
+    } else if (agentFound) {
+      return res
+        .status(403)
+        .send({ message: "You have an account already as an agent" });
+    }
+  });
+
+  //find student exists
+  Student.findOne({ studentID })
+    .populate("documents") //find student in document collection
+    .populate({
+      //find student in application submitted
+      path: "previousApplications",
+      populate: {
+        path: "agent",
+      },
+    })
+    .exec((error, studentFound) => {
+      if (error) {
+        return res.status(500).send({ error2: error.message });
+      } //retreive all the agent for the student
+      else if (studentFound && countryLookingFor == "notSure") {
+        Agent.find({ verified: true }, (error, agents) => {
+          if (error) {
+            return res.send(500).send({ error3: error.message });
+          } else if (agents.length == 0) {
+            return res.status(200).send({
+              message: "Successfully retrieved the data",
+              student: studentFound,
+              agents: "NO verfied agent available",
+            });
+          } else {
+            return res.status(200).send({
+              message: "Successfully retrieved the data",
+              student: studentFound,
+              agents: agents,
+            });
+          }
+        });
+      } //retreive all the agent for specific country
+      else if (studentFound) {
+        Agent.find(
+          { countryLookingFor: countryLookingFor, verified: true },
+          (e, agents) => {
+            if (e) {
+              return res.send(500).send({ error4: e.message });
+            } else if (agents.length == 0) {
+              return res.status(200).send({
+                message: "Successfully retrieved the data",
+                student: studentFound,
+                agents: "NO verfied agent available",
+              });
+            } else {
+              return res.status(200).send({
+                message: "Successfully retrieved the data",
+                student: studentFound,
+                agents: agents,
+              });
+            }
+          }
+        );
+      } else {
+        var newStudent = new Student({
+          studentID: studentID,
+          phone: phone,
+          countryLookingFor: countryLookingFor,
+          ...body,
+        });
+
+        newStudent
+          .save()
+          .then((doc) => {
+            Agent.find(
+              { countryLookingFor: countryLookingFor, verified: true },
+              (e, agents) => {
+                if (e) {
+                  return res.send(500).send({ error5: e.message });
+                } else {
+                  return res.status(201).send({
+                    message: "Successfully created the data",
+                    student: doc,
+                    agents: agents,
+                  });
+                }
+              }
+            );
+          })
+
+          .catch((error) => {
+            return res.status(500).send({ error6: error.message });
+          });
+      }
+    });
+};
+
+const createDoc = async (req, res) => {
+  try {
+    console.log(req.body);
+    const { studentID, documents } = req.body;
+
+    if (!studentID) {
+      throw "student id missing";
+    }
+    const studentData = await Student.findOne({ studentID: studentID });
+    if (!studentData) {
+      //check student exist or not
+      throw "Student not Found";
+    } else {
+      if (!documents.link || !documents.name || !documents.type) {
+        //document fields ok or not
+        throw "One of important field in document missing";
+      }
+      //creating new document
+      let newDoc = new Documents({
+        link: documents.link,
+        name: documents.name,
+        type: documents.type,
+      });
+      //add into document database
+      newDoc.save((err, result) => {
+        if (result) {
+          studentData.documents.push(result); //adding documents in student dataase
+          studentData.save((err, result) => {
+            if (err) {
+              res.status(500).send(err);
+            } else {
+              res.status(200).send("data updated");
+            }
+          });
+        } else {
+          res.status(500).send(err);
+        }
+      });
+    }
+  } catch (e) {
+    res.status(404).send(e);
+  }
+};
+
+//update documents
+
+const updateDoc = (req, res) => {
+  try {
+    const { studentID, documentID, name } = req.body;
+    if (!studentID || !documentID || !name) {
+      throw "One of Important field missing studentID , DocumentId or Name";
+    }
+    Documents.findOneAndUpdate(
+      { _id: documentID },
+      { name },
+      { new: true },
+      (err, result) => {
+        if (err) {
+          res.status(500).send(err);
+        } else {
+          res
+            .status(200)
+            .send({ message: "document updated successfully", data: result });
+        }
+      }
+    );
+  } catch (e) {
+    res.status(404).send(e);
+  }
+};
+
+//for deleting a document
+
+const deleteDoc = async (req, res) => {
+  try {
+    const { studentID, documentID } = req.body;
+    //check if data is correct
+    if (!studentID || !documentID) {
+      throw "studentID or DocumentID missing";
+    }
+    const studentData = await student.findOne({ studentID: studentID }); //find student
+    if (!studentData) {
+      throw "student with studentID doesnt exist";
+    } else {
+      studentData.documents = studentData.documents.filter(
+        //filter student docs to remove required doc
+        (doc) => doc._id != documentID
+      );
+      studentData.save((err, result) => {
+        if (err) {
+          throw err;
+        }
+      });
+
+      Documents.findByIdAndDelete(documentID, (err, document) => {
+        if (err) {
+          res.status(500).send(err);
+        }
+        if (document) {
+          const response = {
+            message: "deleted successfully",
+            data: document,
+          };
+          res.status(200).send(response);
+        } else {
+          res.status(404).send("Document doesnt exist");
+        }
+      });
+    }
+  } catch (e) {
+    res.status(404).send(e);
+  }
+};
+
+module.exports = { create, createDoc, updateDoc, deleteDoc };
