@@ -145,18 +145,18 @@ const createDoc = async (req, res) => {
           studentData.documents.push(result); //adding documents in student dataase
           studentData.save((err, result) => {
             if (err) {
-              res.status(500).send(err);
+              return res.status(500).send(err);
             } else {
-              res.status(200).send("data updated");
+              return res.status(200).send("data updated");
             }
           });
         } else {
-          res.status(500).send(err);
+          return res.status(500).send(err);
         }
       });
     }
   } catch (e) {
-    res.status(404).send(e);
+    return res.status(404).send(e);
   }
 };
 
@@ -174,16 +174,16 @@ const updateDoc = (req, res) => {
       { new: true },
       (err, result) => {
         if (err) {
-          res.status(500).send(err);
+          return res.status(500).send(err);
         } else {
-          res
+          return res
             .status(200)
             .send({ message: "document updated successfully", data: result });
         }
       }
     );
   } catch (e) {
-    res.status(404).send(e);
+    return res.status(404).send(e);
   }
 };
 
@@ -212,21 +212,21 @@ const deleteDoc = async (req, res) => {
 
       Documents.findByIdAndDelete(documentID, (err, document) => {
         if (err) {
-          res.status(500).send(err);
+          return res.status(500).send(err);
         }
         if (document) {
           const response = {
             message: "deleted successfully",
             data: document,
           };
-          res.status(200).send(response);
+          return res.status(200).send(response);
         } else {
-          res.status(404).send("Document doesnt exist");
+          return res.status(404).send("Document doesnt exist");
         }
       });
     }
   } catch (e) {
-    res.status(404).send(e);
+    return res.status(404).send(e);
   }
 };
 
