@@ -17,10 +17,10 @@ var create = async function (req, res) {
     });
   }
 
-  const studentData = await Student.findOne({ studentID: studentID });
-  if (studentData) {
-    return res.status(500).send("Already registered as an student");
-  }
+  // const studentData = await Student.findOne({ studentID: studentID });
+  // if (studentData) {
+  //   return res.status(500).send("Already registered as an student");
+  // }
 
   //find student id already registered as agent
   Agent.findOne({ agentID: studentID }, (error, agentFound) => {

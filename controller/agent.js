@@ -10,10 +10,10 @@ var create = async function (req, res) {
     let body = req.body;
 
     const { agentID, countryLookingFor, phone } = body;
-    const agentData = await Agent.findOne({ agentID: agentID });
-    if (agentData) {
-      return res.status(500).send("Already registered as an Agent");
-    }
+    // const agentData = await Agent.findOne({ agentID: agentID });
+    // if (agentData) {
+    //   return res.status(500).send("Already registered as an Agent");
+    // }
     const studentFound = await Student.findOne({ studentID: agentID });
     if (studentFound) {
       return res
