@@ -14,6 +14,11 @@ const DocumentsSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  agentID: {
+    type: String,
+    ref: "agents",
+    required: true,
+  },
 });
 /////////////////////////////////////////////
 module.exports = mongoose.model("documents", DocumentsSchema);
