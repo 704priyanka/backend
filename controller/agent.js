@@ -11,8 +11,6 @@ var create = async function (req, res) {
 
     const { agentID, countryLookingFor, phone } = body;
 
-
-
     const studentFound = await Student.findOne({ studentID: agentID });
     if (studentFound) {
       return res
@@ -77,7 +75,6 @@ var create = async function (req, res) {
   }
 };
 
-
 const getStudentDoc = async (req, res) => {
   try {
     const { agentID, studentID } = req.body;
@@ -110,8 +107,6 @@ const getStudentDoc = async (req, res) => {
   }
 };
 
-
-
 const agentDocCreate = async (req, res) => {
   try {
     const { agentID, documents } = req.body;
@@ -125,37 +120,72 @@ const agentDocCreate = async (req, res) => {
       throw "Name missing for Either one of the documents";
     }
     if (!documents.type) {
-      throw "Type missing for documents documents";
+      throw "Type missing for documents";
     }
     const agentData = await Agent.findOne({ agentID });
     if (!agentData) {
-      throw "Agent with given id doesnt exist";
+      return res
+        .status(400)
+        .send({ message: "Agent with given id doesnt exist" });
     } else {
-      const doc = new Documents({
-        link: documents.link,
-        name: documents.name,
-        type: documents.type,
+      const docFound = await Documents.findOne({
+        $and: [{ agentID: agentID }, { name: documents.name }],
       });
-      doc.save((err, result) => {
-        if (result) {
-          agentData.documents.push(doc);
-          agentData.save((err, result) => {
-            if (err) {
-              return res.status(500).send(err);
-            } else {
-              return res.status(200).send("Data updated successfully");
-            }
-          });
-        } else {
-          return res.status(500).send(err);
-        }
-      });
+
+      if (docFound) {
+        return res.status(400).send("Document already uploaded");
+      } else {
+        const doc = new Documents({
+          link: documents.link,
+          name: documents.name,
+          type: documents.type,
+          agentID: agentID,
+        });
+        doc.save((err, result) => {
+          if (result) {
+            Documents.find(
+              {
+                agentID: agentID,
+              },
+              (error, docFound) => {
+                var count = 0;
+                docFound.map((key) => {
+                  if (
+                    key.name == "license" ||
+                    key.name == "registrationCertificate" ||
+                    key.name == "personalID"
+                  ) {
+                    count++;
+                  }
+                });
+                if (count == 3) {
+                  agentData.verified = true;
+                  agentData.documents.push(doc);
+                  agentData.save();
+
+                  return res.status(200).send({ message: agentData });
+                } else {
+                  agentData.documents.push(doc);
+                  agentData.save((err, result) => {
+                    if (err) {
+                      return res.status(500).send(err);
+                    } else {
+                      return res.status(200).send({ message: agentData });
+                    }
+                  });
+                }
+              }
+            );
+          } else {
+            return res.status(500).send(err.message);
+          }
+        });
+      }
     }
   } catch (e) {
-    return res.status(404).send(e);
+    return res.status(404).send(e.message);
   }
 };
-
 
 const updateAgentDoc = async (req, res) => {
   try {
@@ -181,7 +211,6 @@ const updateAgentDoc = async (req, res) => {
     return res.status(404).send(e);
   }
 };
-
 
 const agentDeleteDoc = async (req, res) => {
   try {
@@ -224,8 +253,6 @@ const agentDeleteDoc = async (req, res) => {
   }
 };
 
-
-
 module.exports = {
   create,
   agentDocCreate,
@@ -233,4 +260,3 @@ module.exports = {
   agentDeleteDoc,
   updateAgentDoc,
 };
-
