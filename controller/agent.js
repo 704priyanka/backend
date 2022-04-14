@@ -3,12 +3,15 @@ const Agent = require("../models/agent");
 const Applcation = require("../models/applications");
 const Documents = require("../models/documents");
 const agent = require("../models/agent");
+const student = require("../models/student");
 
 var create = async function (req, res) {
   try {
     let body = req.body;
 
     const { agentID, countryLookingFor, phone } = body;
+
+
 
     const studentFound = await Student.findOne({ studentID: agentID });
     if (studentFound) {
@@ -73,4 +76,161 @@ var create = async function (req, res) {
     };
   }
 };
-module.exports = { create };
+
+
+const getStudentDoc = async (req, res) => {
+  try {
+    const { agentID, studentID } = req.body;
+    if (!agentID || !studentID) {
+      throw "One of important field missing AgentID or StudentID";
+    }
+
+    const agentData = await Agent.findOne({ agentID });
+    console.log(agentData.documents);
+    if (!agentData) {
+      throw "Agent with given id doesn't exist";
+    } else {
+      if (
+        agentData.documents.license &&
+        agentData.documents.registrationCertificate &&
+        agentData.documents.personalID
+      ) {
+        const studentData = await Student.findOne({ studentID });
+        if (!studentData) {
+          throw "Student with given id doesnt exist";
+        } else {
+          return res.status(200).send({ data: studentData.documents });
+        }
+      } else {
+        throw "Agent should upload all documents";
+      }
+    }
+  } catch (e) {
+    return res.status(404).send(e);
+  }
+};
+
+
+
+const agentDocCreate = async (req, res) => {
+  try {
+    const { agentID, documents } = req.body;
+    if (!agentID) {
+      throw "AgentID missing";
+    }
+    if (!documents.link) {
+      throw "Link missing for Either one of the documents";
+    }
+    if (!documents.name) {
+      throw "Name missing for Either one of the documents";
+    }
+    if (!documents.type) {
+      throw "Type missing for documents documents";
+    }
+    const agentData = await Agent.findOne({ agentID });
+    if (!agentData) {
+      throw "Agent with given id doesnt exist";
+    } else {
+      const doc = new Documents({
+        link: documents.link,
+        name: documents.name,
+        type: documents.type,
+      });
+      doc.save((err, result) => {
+        if (result) {
+          agentData.documents.push(doc);
+          agentData.save((err, result) => {
+            if (err) {
+              return res.status(500).send(err);
+            } else {
+              return res.status(200).send("Data updated successfully");
+            }
+          });
+        } else {
+          return res.status(500).send(err);
+        }
+      });
+    }
+  } catch (e) {
+    return res.status(404).send(e);
+  }
+};
+
+
+const updateAgentDoc = async (req, res) => {
+  try {
+    const { agentID, documentID, name } = req.body;
+    if (!agentID || !documentID || !name) {
+      throw "One of Important field missing agentID , DocumentId or Name";
+    }
+    Documents.findOneAndUpdate(
+      { _id: documentID },
+      { name },
+      { new: true },
+      (err, result) => {
+        if (err) {
+          return res.status(500).send(err);
+        } else {
+          return res
+            .status(200)
+            .send({ message: "document updated successfully", data: result });
+        }
+      }
+    );
+  } catch (e) {
+    return res.status(404).send(e);
+  }
+};
+
+
+const agentDeleteDoc = async (req, res) => {
+  try {
+    const { agentID, documentID } = req.body;
+    //check if data is correct
+    if (!agentID || !documentID) {
+      throw "studentID or DocumentID missing";
+    }
+    const agentData = await Agent.findOne({ AgentID: agentID }); //find agent
+    if (!agentData) {
+      throw "agent with agentID doesnt exist";
+    } else {
+      agentData.documents = agentData.documents.filter(
+        //filter student docs to remove required doc
+        (doc) => doc._id != documentID
+      );
+      agentData.save((err, result) => {
+        if (err) {
+          return res.status(500).send(err);
+        }
+      });
+
+      Documents.findByIdAndDelete(documentID, (err, document) => {
+        if (err) {
+          return res.status(500).send(err);
+        }
+        if (document) {
+          const response = {
+            message: "deleted successfully",
+            data: document,
+          };
+          return res.status(200).send(response);
+        } else {
+          return res.status(404).send("Document doesnt exist");
+        }
+      });
+    }
+  } catch (e) {
+    return res.status(404).send(e);
+  }
+};
+
+
+
+module.exports = {
+  create,
+  agentDocCreate,
+  getStudentDoc,
+  agentDeleteDoc,
+  updateAgentDoc,
+};
+
