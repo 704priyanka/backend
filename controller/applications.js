@@ -74,7 +74,9 @@ const create = async function (req, res) {
       const applicationCreated = await Application.create(applicationOffer);
 
       studentFound.previousApplications.push(applicationCreated);
+
       studentFound.save((err, studentUpdated) => {
+        console.log(studentUpdated);
         if (err || !studentUpdated) {
           throw Error(
             err.message

@@ -1,11 +1,7 @@
 const Student = require("../models/student");
 const Agent = require("../models/agent");
-const Applcation = require("../models/applications");
+const Application = require("../models/applications");
 const Documents = require("../models/documents");
-const student = require("../models/student");
-const express = require("express");
-const { response } = require("express");
-const router = express.Router();
 
 var create = async function (req, res) {
   let body = req.body;
@@ -15,11 +11,6 @@ var create = async function (req, res) {
     return res.status(400).send({
       message: `One of the imported fields is missing phone:${!phone} studnetID:${!studentID} countryLookingFor:${!countryLookingFor}`,
     });
-  }
-
-  const studentData = await Student.findOne({ studentID: studentID });
-  if (studentData) {
-    return res.status(500).send("Already registered as an student");
   }
 
   //find student id already registered as agent
@@ -149,7 +140,6 @@ const studentDataUpdate = async (req, res) => {
 
 const createDoc = async (req, res) => {
   try {
-    console.log(req.body);
     const { studentID, documents } = req.body;
 
     if (!studentID) {
@@ -227,7 +217,7 @@ const deleteDoc = async (req, res) => {
     if (!studentID || !documentID) {
       throw "studentID or DocumentID missing";
     }
-    const studentData = await student.findOne({ studentID: studentID }); //find student
+    const studentData = await Student.findOne({ studentID: studentID }); //find student
     if (!studentData) {
       throw "student with studentID doesnt exist";
     } else {
@@ -237,7 +227,7 @@ const deleteDoc = async (req, res) => {
       );
       studentData.save((err, result) => {
         if (err) {
-          return res.status(500).send(err);
+          throw err;
         }
       });
 
@@ -261,4 +251,55 @@ const deleteDoc = async (req, res) => {
   }
 };
 
-module.exports = { create, createDoc, updateDoc, deleteDoc, studentDataUpdate };
+const addApplication = async function (req, res) {
+  try {
+    const { applicationID, agentID, studentID } = req.body;
+    if (!applicationID || !agentID || !studentID) {
+      res.status(400).send({
+        message: `Some of the data missing applicationId , agentID , studentID`,
+      });
+    } else {
+      Application.findById(applicationID)
+        .populate("student")
+        .populate("agent")
+
+        .exec((err, applicationFound) => {
+          if (err || !applicationFound) {
+            return res.status(500).send({
+              message: "Applcation with given id not found",
+              err: err ? err : "Server can't update",
+            });
+          } else {
+            if (
+              applicationFound.agent.agentID === agentID &&
+              applicationFound.student.studentID === studentID
+            ) {
+              applicationFound["accepted"] = true;
+              applicationFound.save((err, applicationUpdated) => {
+                if (err || !applicationUpdated) {
+                  return res.status(400).send({
+                    message:
+                      "Somethiing went wrong while updatin the application",
+                    err: err ? err : "Server can't update",
+                  });
+                } else {
+                  res.status(200).send({
+                    message: "Succussefully accepted the application",
+                    data: applicationUpdated,
+                  });
+                }
+              });
+            } else {
+              return res.status(500).send({
+                message: "student/agent with given id not found",
+              });
+            }
+          }
+        });
+    }
+  } catch (e) {
+    return res.status(500).send({ error: e.message });
+  }
+};
+
+module.exports = { create, createDoc, updateDoc, deleteDoc, addApplication ,studentDataUpdate };
