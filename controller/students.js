@@ -15,6 +15,7 @@ var create = async function (req, res) {
 
   //find student id already registered as agent
   Agent.findOne({ agentID: studentID }, (error, agentFound) => {
+    console.log(agentFound);
     if (error) {
       return res.status(500).send({ error1: error.message });
     } else if (agentFound) {
