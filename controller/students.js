@@ -3,9 +3,6 @@ const Agent = require("../models/agent");
 const Application = require("../models/applications");
 const Documents = require("../models/documents");
 
-const express = require("express");
-const { application } = require("express");
-
 var create = async function (req, res) {
   let body = req.body;
 
@@ -15,11 +12,6 @@ var create = async function (req, res) {
       message: `One of the imported fields is missing phone:${!phone} studnetID:${!studentID} countryLookingFor:${!countryLookingFor}`,
     });
   }
-
-  // const studentData = await Student.findOne({ studentID: studentID });
-  // if (studentData) {
-  //   return res.status(500).send("Already registered as an student");
-  // }
 
   //find student id already registered as agent
   Agent.findOne({ agentID: studentID }, (error, agentFound) => {
@@ -209,7 +201,7 @@ const deleteDoc = async (req, res) => {
       );
       studentData.save((err, result) => {
         if (err) {
-          return res.status(500).send(err);
+          throw err;
         }
       });
 
