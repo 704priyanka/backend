@@ -5,8 +5,8 @@ var studentdata = require("../controller/students");
 router.post("/home", studentdata.create);
 router.put("/update/:studentID");
 router.post("/application/add");
-router.post("/createDoc");
-router.put("/updateDoc");
-router.delete("/deleteDoc");
+router.post("/createDoc", studentdata.createDoc);
+router.put("/updateDoc", studentdata.updateDoc);
+router.delete("/deleteDoc", studentdata.deleteDoc);
 
 module.exports = router;
