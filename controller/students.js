@@ -121,6 +121,32 @@ var create = async function (req, res) {
     });
 };
 
+const studentDataUpdate = async (req, res) => {
+  try {
+    const { studentID } = req.body;
+    if (!studentID) {
+      throw "studentID missing";
+    }
+    const data = req.body;
+    delete data.studentID;
+    const studentData = await Student.findOneAndUpdate({ studentID }, data, {
+      new: true,
+    });
+    if (studentData) {
+      return res.status(200).send({
+        message: "successfully updated",
+        data: studentData,
+      });
+    } else {
+      return res
+        .status(404)
+        .send({ message: "Student with given ID doesnt exist" });
+    }
+  } catch (e) {
+    return res.status(404).send(e);
+  }
+};
+
 const createDoc = async (req, res) => {
   try {
     console.log(req.body);
@@ -235,4 +261,4 @@ const deleteDoc = async (req, res) => {
   }
 };
 
-module.exports = { create, createDoc, updateDoc, deleteDoc };
+module.exports = { create, createDoc, updateDoc, deleteDoc, studentDataUpdate };

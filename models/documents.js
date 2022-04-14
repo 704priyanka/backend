@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-/////////////////////////////////////////////
+
 const DocumentsSchema = new mongoose.Schema({
   link: {
     type: String,
@@ -15,5 +15,5 @@ const DocumentsSchema = new mongoose.Schema({
     required: true,
   },
 });
-/////////////////////////////////////////////
+
 module.exports = mongoose.model("documents", DocumentsSchema);
