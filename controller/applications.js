@@ -21,8 +21,8 @@ const create = async function (req, res) {
     let color = randomColor();
     const body = req.body;
     const {
-      student,
-      agent,
+      studentID,
+      agentID,
       universityName,
       location,
       applicationFees,
