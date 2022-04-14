@@ -21,8 +21,8 @@ const create = async function (req, res) {
     let color = randomColor();
     const body = req.body;
     const {
-      studentID,
-      agentID,
+      student,
+      agent,
       universityName,
       location,
       applicationFees,
@@ -33,7 +33,7 @@ const create = async function (req, res) {
       color,
       ...body,
     };
-    if (!studentID || !agentID) {
+    if (!student || !agent) {
       return res.status(400).send({
         message: "Important field missing",
         fieldName: "StudentID or AgentID",
@@ -74,7 +74,9 @@ const create = async function (req, res) {
       const applicationCreated = await Application.create(applicationOffer);
 
       studentFound.previousApplications.push(applicationCreated);
+
       studentFound.save((err, studentUpdated) => {
+        console.log(studentUpdated);
         if (err || !studentUpdated) {
           throw Error(
             err.message
