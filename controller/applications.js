@@ -73,7 +73,8 @@ const create = async function (req, res) {
       applicationOffer.student = studentFound.id;
       applicationOffer.agent = agentFound.id;
       const applicationCreated = await Application.create(applicationOffer);
-
+      agentFound.applications.push(applicationCreated);
+      agentFound.save();
       studentFound.previousApplications.push(applicationCreated);
 
       studentFound.save((err, studentUpdated) => {
