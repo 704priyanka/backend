@@ -50,7 +50,7 @@ const AgentsSchema = new mongoose.Schema({
   documents: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "documents",
+      ref: "agentDoc",
     },
   ],
   location: {
@@ -81,10 +81,6 @@ const AgentsSchema = new mongoose.Schema({
     required: true,
     type: Boolean,
     default: false,
-  },
-  since: {
-    required: true,
-    type: String,
   },
 });
 /////////////////////////////////////////////

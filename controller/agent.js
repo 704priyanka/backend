@@ -1,7 +1,7 @@
 const Student = require("../models/student");
 const Agent = require("../models/agent");
 const Applcation = require("../models/applications");
-const Documents = require("../models/documents");
+const AgentDoc = require("../models/agentDoc");
 const agent = require("../models/agent");
 const student = require("../models/student");
 
@@ -17,52 +17,48 @@ var create = async function (req, res) {
         .status(403)
         .send({ message: "You have an account already as a student" });
     } else {
-      const agentFound = await Agent.findOne({ agentID })
-        .populate("documents")
-        .exec();
+      const agentFound = await Agent.findOne({ agentID }).populate("documents");
+      console.log(agentFound);
       if (agentFound) {
-        if (countryLookingFor == "notSure") {
-          const studentFound = await Student.find({ verified: true })
-            .populate("documents")
-            .exec();
+        const studentFound = await Student.find({
+          countryLookingFor: countryLookingFor,
+          verified: true,
+        });
 
-          if (studentFound) {
-            return res.status(200).send({
-              message: "Successfully retrieved the data",
-              agent: agentFound,
-              students: studentFound,
-            });
-          }
-        } else {
-          const studentFound = await Student.find({
-            countryLookingFor: countryLookingFor,
-            verified: true,
-          })
-            .populate("documents")
-            .exec();
-          if (studentFound) {
-            return res.status(200).send({
-              message: "Successfully retrieved the data",
-              agent: agentFound,
-              students: studentFound,
-            });
-          }
+        if (studentFound) {
+          return res.status(200).send({
+            message: "Successfully retrieved the data",
+            agent: agentFound,
+            students: studentFound,
+          });
         }
       } else {
         const newAgent = await Agent({
           agentID: agentID,
           phone: phone,
           ...body,
-          since: date,
+          agentsince: date,
         });
         newAgent
           .save()
           .then((doc) => {
-            return res.status(200).send({
-              message: "Successfully created the data",
-              agent: doc,
-              students: studentFound,
-            });
+            Student.find(
+              {
+                countryLookingFor: countryLookingFor,
+                verified: true,
+              },
+              (err, studentFound) => {
+                if (studentFound) {
+                  return res.status(200).send({
+                    message: "Successfully created the data",
+                    agent: doc,
+                    students: studentFound,
+                  });
+                } else {
+                  throw err;
+                }
+              }
+            );
           })
           .catch((err) => {
             res.status(500).send({ error: err.message });
@@ -129,14 +125,14 @@ const agentDocCreate = async (req, res) => {
         .status(400)
         .send({ message: "Agent with given id doesnt exist" });
     } else {
-      const docFound = await Documents.findOne({
+      const docFound = await AgentDoc.findOne({
         $and: [{ agentID: agentID }, { name: documents.name }],
       });
 
       if (docFound) {
         return res.status(400).send("Document already uploaded");
       } else {
-        const doc = new Documents({
+        const doc = new AgentDoc({
           link: documents.link,
           name: documents.name,
           type: documents.type,
@@ -144,7 +140,7 @@ const agentDocCreate = async (req, res) => {
         });
         doc.save((err, result) => {
           if (result) {
-            Documents.find(
+            AgentDoc.find(
               {
                 agentID: agentID,
               },
@@ -194,7 +190,7 @@ const updateAgentDoc = async (req, res) => {
     if (!agentID || !documentID || !name) {
       throw "One of Important field missing agentID , DocumentId or Name";
     }
-    Documents.findOneAndUpdate(
+    AgentDoc.findOneAndUpdate(
       { _id: documentID },
       { name },
       { new: true },
@@ -234,7 +230,7 @@ const agentDeleteDoc = async (req, res) => {
         }
       });
 
-      Documents.findByIdAndDelete(documentID, (err, document) => {
+      AgentDoc.findByIdAndDelete(documentID, (err, document) => {
         if (err) {
           return res.status(500).send(err);
         }

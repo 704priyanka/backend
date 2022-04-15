@@ -259,44 +259,61 @@ const addApplication = async function (req, res) {
         message: `Some of the data missing applicationId , agentID , studentID`,
       });
     } else {
-      Application.findById(applicationID)
-        .populate("student")
-        .populate("agent")
+      const studentFound = await Student.findOne({ studentID }).populate(
+        "previousApplications"
+      );
+      if (studentFound.verified == true) {
+        Application.findById(applicationID)
+          .populate("student")
+          .populate("agent")
 
-        .exec((err, applicationFound) => {
-          if (err || !applicationFound) {
-            return res.status(500).send({
-              message: "Applcation with given id not found",
-              err: err ? err : "Server can't update",
-            });
-          } else {
-            if (
-              applicationFound.agent.agentID === agentID &&
-              applicationFound.student.studentID === studentID
-            ) {
-              applicationFound["accepted"] = true;
-              applicationFound.status = 3;
-              applicationFound.save((err, applicationUpdated) => {
-                if (err || !applicationUpdated) {
-                  return res.status(400).send({
-                    message:
-                      "Somethiing went wrong while updatin the application",
-                    err: err ? err : "Server can't update",
-                  });
-                } else {
-                  res.status(200).send({
-                    message: "Succussefully accepted the application",
-                    data: applicationUpdated,
-                  });
-                }
+          .exec((err, applicationFound) => {
+            if (err || !applicationFound) {
+              return res.status(500).send({
+                message: "Applcation with given id not found",
+                err: err ? err : "Server can't update",
               });
             } else {
-              return res.status(500).send({
-                message: "student/agent with given id not found",
+              Agent.findOne({ agentID }, (err, agentFound) => {
+                if (agentFound.application) {
+                  console.log(agentFound);
+                  agentFound.applicationsHandled += 1;
+                  agentFound.save();
+                }
               });
+              if (
+                applicationFound.agent.agentID === agentID &&
+                applicationFound.student.studentID === studentID
+              ) {
+                applicationFound["accepted"] = true;
+
+                applicationFound.status = 3;
+                applicationFound.save((err, applicationUpdated) => {
+                  if (err || !applicationUpdated) {
+                    return res.status(400).send({
+                      message:
+                        "Somethiing went wrong while updatin the application",
+                      err: err ? err : "Server can't update",
+                    });
+                  } else {
+                    res.status(200).send({
+                      message: "Succussefully accepted the application",
+                      data: applicationUpdated,
+                    });
+                  }
+                });
+              } else {
+                return res.status(500).send({
+                  message: "student/agent with given id not found",
+                });
+              }
             }
-          }
+          });
+      } else {
+        return res.status(500).send({
+          message: "student is not verified",
         });
+      }
     }
   } catch (e) {
     return res.status(500).send({ error: e.message });
