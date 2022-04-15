@@ -5,7 +5,7 @@ var agent = require("../controller/agent");
 router.post("/home", agent.create); //create agent profile
 router.post("/update/:agentID"); //update agent profile
 router.post("/getStudent/doc", agent.getStudentDoc); //get student documents
-router.post("/CreateDoc", agent.agentDocCreate); //create document for agent
+router.post("/createDoc", agent.agentDocCreate); //create document for agent
 router.put("/upadteDoc", agent.updateAgentDoc); //upadte document for agent
 router.delete("/deleteDoc", agent.agentDeleteDoc); //delete document for agent
 
