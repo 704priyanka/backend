@@ -8,7 +8,7 @@ const student = require("../models/student");
 var create = async function (req, res) {
   try {
     let body = req.body;
-
+    const date = new Date().getFullYear();
     const { agentID, countryLookingFor, phone } = body;
 
     const studentFound = await Student.findOne({ studentID: agentID });
@@ -53,6 +53,7 @@ var create = async function (req, res) {
           agentID: agentID,
           phone: phone,
           ...body,
+          since: date,
         });
         newAgent
           .save()
