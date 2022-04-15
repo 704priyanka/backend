@@ -223,6 +223,9 @@ const agentDeleteDoc = async (req, res) => {
       throw "studentID or DocumentID missing";
     }
     const agentData = await Agent.findOne({ AgentID: agentID }); //find agent
+    agentData.documents.filter((doc) => {
+      return doc != documentID;
+    });
     if (!agentData) {
       throw "agent with agentID doesnt exist";
     } else {
@@ -245,9 +248,11 @@ const agentDeleteDoc = async (req, res) => {
                 };
                 return res.status(200).send(response);
               } else {
-                return res.status(500).send(e);
+                return res.status(500).send(err);
               }
             });
+          } else {
+            return res.status(200).send("deleted successfully");
           }
         } else {
           return res.status(404).send("Document doesnt exist");

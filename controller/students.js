@@ -249,6 +249,9 @@ const deleteDoc = async (req, res) => {
     if (!studentData) {
       throw "student with studentID doesnt exist";
     } else {
+      studentData.documents((doc) => {
+        return doc != documentID;
+      });
       StudentDoc.findByIdAndDelete(documentID, (err, document) => {
         if (err) {
           return res.status(500).send(err);
@@ -271,6 +274,8 @@ const deleteDoc = async (req, res) => {
                 return res.status(500).send(err);
               }
             });
+          } else {
+            return res.status(200).send("Delete succesfully");
           }
         } else {
           return res.status(404).send("Document doesnt exist");
