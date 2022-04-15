@@ -31,6 +31,7 @@ const create = async function (req, res) {
 
     const applicationOffer = {
       color,
+      status: 2,
       ...body,
     };
     if (!studentID || !agentID) {
@@ -62,19 +63,36 @@ const create = async function (req, res) {
       return res.status(500).send({
         message: "Agent with given id doesn't exist",
       });
-    } else if (agentFound.verified === true) {
+    } else if (agentFound.verified === false) {
       return res.status(500).send({
         message:
           "Agent with given id doesn't has verified and needs to add required documents",
         data: agentFound,
       });
     } else {
-      applicationOffer.student = studentFound.id;
-      applicationOffer.agent = agentFound.id;
+      applicationOffer.student = studentID;
+      applicationOffer.agent = agentID;
       const applicationCreated = await Application.create(applicationOffer);
-
+      applicationCreated
+        .save()
+        .then((doc) => {
+          console.log(doc);
+        })
+        .catch((err) => {
+          return res.status(500).send({ message: err.message });
+        });
       studentFound.previousApplications.push(applicationCreated);
-
+      //studentFound.previousApplications.agentID.push(agentID);
+      console.log(applicationCreated);
+      agentFound.applications.push(applicationCreated);
+      agentFound
+        .save()
+        .then((doc) => {
+          console.log(doc);
+        })
+        .catch((err) => {
+          return res.status(500).send({ message: err.message });
+        });
       studentFound.save((err, studentUpdated) => {
         console.log(studentUpdated);
         if (err || !studentUpdated) {

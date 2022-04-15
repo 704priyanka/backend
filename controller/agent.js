@@ -18,47 +18,49 @@ var create = async function (req, res) {
         .send({ message: "You have an account already as a student" });
     } else {
       const agentFound = await Agent.findOne({ agentID }).populate("documents");
-      console.log(agentFound);
+
       if (agentFound) {
         const studentFound = await Student.find({
           countryLookingFor: countryLookingFor,
           verified: true,
+        }).populate({
+          path: "previousApplications",
+          match: { agent: agentID },
         });
-
         if (studentFound) {
-          return res.status(200).send({
-            message: "Successfully retrieved the data",
-            agent: agentFound,
-            students: studentFound,
-          });
+          return res.status(200).send(studentFound);
+        } else {
+          return res
+            .status(500)
+            .send({ message: "no verified student available" });
         }
       } else {
         const newAgent = await Agent({
           agentID: agentID,
           phone: phone,
           ...body,
-          agentsince: date,
+          agentSince: date,
         });
         newAgent
           .save()
           .then((doc) => {
-            Student.find(
-              {
-                countryLookingFor: countryLookingFor,
-                verified: true,
-              },
-              (err, studentFound) => {
+            Student.find({
+              countryLookingFor: countryLookingFor,
+              verified: true,
+            })
+              .populate({
+                path: "previousApplications",
+                match: { agent: agentID },
+              })
+              .exec((err, studentFound) => {
                 if (studentFound) {
-                  return res.status(200).send({
-                    message: "Successfully created the data",
-                    agent: doc,
-                    students: studentFound,
-                  });
+                  return res.status(200).send(studentFound);
                 } else {
-                  throw err;
+                  return res
+                    .status(500)
+                    .send({ message: "no verified student available" });
                 }
-              }
-            );
+              });
           })
           .catch((err) => {
             res.status(500).send({ error: err.message });

@@ -27,13 +27,10 @@ var create = async function (req, res) {
   //find student exists
   Student.findOne({ studentID })
     .populate("documents") //find student in document collection
-    .populate({
+    .populate(
       //find student in application submitted
-      path: "previousApplications",
-      populate: {
-        path: "agent",
-      },
-    })
+      "previousApplications"
+    )
     .exec((error, studentFound) => {
       if (error) {
         return res.status(500).send({ error2: error.message });
@@ -255,14 +252,32 @@ const addApplication = async function (req, res) {
   try {
     const { applicationID, agentID, studentID } = req.body;
     if (!applicationID || !agentID || !studentID) {
-      res.status(400).send({
+      return res.status(400).send({
         message: `Some of the data missing applicationId , agentID , studentID`,
       });
     } else {
       const studentFound = await Student.findOne({ studentID }).populate(
         "previousApplications"
       );
+
+      if (!studentFound) {
+        return res.status(500).send({
+          message: `student does not exists`,
+        });
+      }
+      var foundApplication;
       if (studentFound.verified == true) {
+        studentFound.previousApplications.map((key) => {
+          if (key == applicationID) {
+            foundApplication = +1;
+          }
+        });
+
+        if (foundApplication >= 1) {
+          return res.status(200).send({
+            message: "already  accepted the application",
+          });
+        }
         Application.findById(applicationID)
           .populate("student")
           .populate("agent")
@@ -274,13 +289,6 @@ const addApplication = async function (req, res) {
                 err: err ? err : "Server can't update",
               });
             } else {
-              Agent.findOne({ agentID }, (err, agentFound) => {
-                if (agentFound.application) {
-                  console.log(agentFound);
-                  agentFound.applicationsHandled += 1;
-                  agentFound.save();
-                }
-              });
               if (
                 applicationFound.agent.agentID === agentID &&
                 applicationFound.student.studentID === studentID
@@ -296,6 +304,15 @@ const addApplication = async function (req, res) {
                       err: err ? err : "Server can't update",
                     });
                   } else {
+                    Agent.findOne({
+                      agentID: agentID,
+                      application: applicationID,
+                    }).then((doc) => {
+                      if (doc) {
+                        doc.applicationsHandled = +1;
+                        doc.save().then((docs) => {});
+                      }
+                    });
                     res.status(200).send({
                       message: "Succussefully accepted the application",
                       data: applicationUpdated,
