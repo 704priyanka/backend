@@ -224,17 +224,20 @@ const agentDeleteDoc = async (req, res) => {
         //filter student docs to remove required doc
         (doc) => doc._id != documentID
       );
-      agentData.save((err, result) => {
-        if (err) {
-          return res.status(500).send(err);
-        }
-      });
 
       AgentDoc.findByIdAndDelete(documentID, (err, document) => {
         if (err) {
           return res.status(500).send(err);
         }
         if (document) {
+          if (
+            document.name === "license" ||
+            document.name === "registrationCertificate" ||
+            document.name === "personalID"
+          ) {
+            agentData.verified = false;
+            agentData.save();
+          }
           const response = {
             message: "deleted successfully",
             data: document,

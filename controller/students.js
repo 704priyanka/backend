@@ -26,7 +26,7 @@ var create = async function (req, res) {
 
   //find student exists
   Student.findOne({ studentID })
-    .populate("studentDoc") //find student in document collection
+    .populate("documents") //find student in document collection
     .populate({
       //find student in application submitted
       path: "previousApplications",

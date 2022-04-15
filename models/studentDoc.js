@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const DocumentsSchema = new mongoose.Schema({
+const studentDocSchema = new mongoose.Schema({
   link: {
     type: String,
     required: true,
@@ -21,4 +21,4 @@ const DocumentsSchema = new mongoose.Schema({
   },
 });
 
-module.exports = mongoose.model("studentDoc", DocumentsSchema);
+module.exports = mongoose.model("studentDoc", studentDocSchema);
