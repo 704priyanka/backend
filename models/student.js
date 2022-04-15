@@ -54,7 +54,7 @@ const StudentSchema = new mongoose.Schema({
   documents: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "documents",
+      ref: "studentDoc",
     },
   ],
   location: {
@@ -73,4 +73,8 @@ const StudentSchema = new mongoose.Schema({
 });
 
 /////////////////////////////////////////////////////
+<<<<<<< HEAD
 module.exports = mongoose.model("student", StudentSchema);
+=======
+module.exports = mongoose.model("students", StudentSchema);
+>>>>>>> 0de238f10d8d8af55e878b11def2443bc5902e64

@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const DocumentsSchema = new mongoose.Schema({
+const studentDocSchema = new mongoose.Schema({
   link: {
     type: String,
     required: true,
@@ -14,11 +14,11 @@ const DocumentsSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  agentID: {
+  studentID: {
     type: String,
-    ref: "agents",
+    ref: "students",
     required: true,
   },
 });
 
-module.exports = mongoose.model("documents", DocumentsSchema);
+module.exports = mongoose.model("studentDoc", studentDocSchema);

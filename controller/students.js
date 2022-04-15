@@ -1,7 +1,7 @@
 const Student = require("../models/student");
 const Agent = require("../models/agent");
 const Application = require("../models/applications");
-const Documents = require("../models/documents");
+const StudentDoc = require("../models/studentDoc");
 
 var create = async function (req, res) {
   let body = req.body;
@@ -151,27 +151,58 @@ const createDoc = async (req, res) => {
         //document fields ok or not
         throw "One of important field in document missing";
       }
-      //creating new document
-      let newDoc = new Documents({
-        link: documents.link,
-        name: documents.name,
-        type: documents.type,
+      const docFound = await StudentDoc.findOne({
+        $and: [{ studentID: studentID }, { name: documents.name }],
       });
-      //add into document database
-      newDoc.save((err, result) => {
-        if (result) {
-          studentData.documents.push(result); //adding documents in student dataase
-          studentData.save((err, result) => {
-            if (err) {
-              return res.status(500).send(err);
-            } else {
-              return res.status(200).send("data updated");
-            }
-          });
-        } else {
-          return res.status(500).send(err);
-        }
-      });
+
+      if (docFound) {
+        return res.status(400).send("Document already uploaded");
+      } else {
+        const doc = new StudentDoc({
+          link: documents.link,
+          name: documents.name,
+          type: documents.type,
+          studentID: studentID,
+        });
+        doc.save((err, result) => {
+          if (result) {
+            StudentDoc.find(
+              {
+                studentID: studentID,
+              },
+              (error, docFound) => {
+                var count = 0;
+                docFound.map((key) => {
+                  if (
+                    key.name == "passport" ||
+                    key.name == "englishProficiencyTest" ||
+                    key.name == "academics"
+                  ) {
+                    count++;
+                  }
+                });
+                if (count == 3) {
+                  studentData.verified = true;
+                  studentData.documents.push(doc);
+                  studentData.save();
+                  return res.status(200).send({ message: studentData });
+                } else {
+                  studentData.documents.push(doc);
+                  studentData.save((err, result) => {
+                    if (err) {
+                      return res.status(500).send(err);
+                    } else {
+                      return res.status(200).send({ message: studentData });
+                    }
+                  });
+                }
+              }
+            );
+          } else {
+            return res.status(500).send(err.message);
+          }
+        });
+      }
     }
   } catch (e) {
     return res.status(404).send(e);
@@ -186,7 +217,7 @@ const updateDoc = (req, res) => {
     if (!studentID || !documentID || !name) {
       throw "One of Important field missing studentID , DocumentId or Name";
     }
-    Documents.findOneAndUpdate(
+    StudentDoc.findOneAndUpdate(
       { _id: documentID },
       { name },
       { new: true },
@@ -218,21 +249,19 @@ const deleteDoc = async (req, res) => {
     if (!studentData) {
       throw "student with studentID doesnt exist";
     } else {
-      studentData.documents = studentData.documents.filter(
-        //filter student docs to remove required doc
-        (doc) => doc._id != documentID
-      );
-      studentData.save((err, result) => {
-        if (err) {
-          throw err;
-        }
-      });
-
-      Documents.findByIdAndDelete(documentID, (err, document) => {
+      StudentDoc.findByIdAndDelete(documentID, (err, document) => {
         if (err) {
           return res.status(500).send(err);
         }
         if (document) {
+          if (
+            document.name === "passport" ||
+            document.name === "englishProficiencyTest" ||
+            document.name === "academics"
+          ) {
+            studentData.verified = false;
+            await studentData.save();
+          }
           const response = {
             message: "deleted successfully",
             data: document,

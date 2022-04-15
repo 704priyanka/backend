@@ -1,10 +1,6 @@
 const Student = require("../models/student");
 const Agent = require("../models/agent");
-const Applcation = require("../models/applications");
 const AgentDoc = require("../models/agentDoc");
-const agent = require("../models/agent");
-const student = require("../models/student");
-
 var create = async function (req, res) {
   try {
     let body = req.body;
@@ -222,21 +218,20 @@ const agentDeleteDoc = async (req, res) => {
     if (!agentData) {
       throw "agent with agentID doesnt exist";
     } else {
-      agentData.documents = agentData.documents.filter(
-        //filter student docs to remove required doc
-        (doc) => doc._id != documentID
-      );
-      agentData.save((err, result) => {
-        if (err) {
-          return res.status(500).send(err);
-        }
-      });
 
       AgentDoc.findByIdAndDelete(documentID, (err, document) => {
         if (err) {
           return res.status(500).send(err);
         }
         if (document) {
+          if (
+            document.name === "license" ||
+            document.name === "registrationCertificate" ||
+            document.name === "personalID"
+          ) {
+            agentData.verified = false;
+           await agentData.save();
+          }
           const response = {
             message: "deleted successfully",
             data: document,
