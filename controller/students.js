@@ -263,13 +263,18 @@ const deleteDoc = async (req, res) => {
             document.name === "academics"
           ) {
             studentData.verified = false;
-            await studentData.save();
+            studentData.save((err, doc) => {
+              if (doc) {
+                const response = {
+                  message: "deleted successfully",
+                  data: doc,
+                };
+                return res.status(200).send(response);
+              } else {
+                return res.status(500).send(err);
+              }
+            });
           }
-          const response = {
-            message: "deleted successfully",
-            data: document,
-          };
-          return res.status(200).send(response);
         } else {
           return res.status(404).send("Document doesnt exist");
         }

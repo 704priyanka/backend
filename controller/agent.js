@@ -216,7 +216,6 @@ const agentDeleteDoc = async (req, res) => {
     if (!agentData) {
       throw "agent with agentID doesnt exist";
     } else {
-
       AgentDoc.findByIdAndDelete(documentID, (err, document) => {
         if (err) {
           return res.status(500).send(err);
@@ -228,13 +227,18 @@ const agentDeleteDoc = async (req, res) => {
             document.name === "personalID"
           ) {
             agentData.verified = false;
-           await agentData.save();
+            agentData.save((err, doc) => {
+              if (doc) {
+                const response = {
+                  message: "deleted successfully",
+                  data: doc,
+                };
+                return res.status(200).send(response);
+              } else {
+                return res.status(500).send(e);
+              }
+            });
           }
-          const response = {
-            message: "deleted successfully",
-            data: document,
-          };
-          return res.status(200).send(response);
         } else {
           return res.status(404).send("Document doesnt exist");
         }
