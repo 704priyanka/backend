@@ -275,7 +275,7 @@ const addApplication = async function (req, res) {
               applicationFound.student.studentID === studentID
             ) {
               applicationFound["accepted"] = true;
-              applicationFound.status(3);
+              applicationFound.status = 3;
               applicationFound.save((err, applicationUpdated) => {
                 if (err || !applicationUpdated) {
                   return res.status(400).send({

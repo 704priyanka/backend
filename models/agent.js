@@ -85,6 +85,10 @@ const AgentsSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  since: {
+    required: true,
+    type: String,
+  },
 });
 /////////////////////////////////////////////
 module.exports = mongoose.model("agents", AgentsSchema);
