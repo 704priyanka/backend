@@ -54,7 +54,7 @@ const StudentSchema = new mongoose.Schema({
   documents: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "documents",
+      ref: "studentDoc",
     },
   ],
   location: {
