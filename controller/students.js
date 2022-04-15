@@ -275,6 +275,7 @@ const addApplication = async function (req, res) {
               applicationFound.student.studentID === studentID
             ) {
               applicationFound["accepted"] = true;
+              applicationFound.status(3);
               applicationFound.save((err, applicationUpdated) => {
                 if (err || !applicationUpdated) {
                   return res.status(400).send({
@@ -302,4 +303,11 @@ const addApplication = async function (req, res) {
   }
 };
 
-module.exports = { create, createDoc, updateDoc, deleteDoc, addApplication ,studentDataUpdate };
+module.exports = {
+  create,
+  createDoc,
+  updateDoc,
+  deleteDoc,
+  addApplication,
+  studentDataUpdate,
+};
