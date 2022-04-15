@@ -252,10 +252,6 @@ const deleteDoc = async (req, res) => {
     if (!studentData) {
       throw "student with studentID doesnt exist";
     } else {
-      studentData.documents = studentData.documents.filter(
-        //filter student docs to remove required doc
-        (doc) => doc._id != documentID
-      );
       StudentDoc.findByIdAndDelete(documentID, (err, document) => {
         if (err) {
           return res.status(500).send(err);
@@ -267,7 +263,7 @@ const deleteDoc = async (req, res) => {
             document.name === "academics"
           ) {
             studentData.verified = false;
-            studentData.save();
+            await studentData.save();
           }
           const response = {
             message: "deleted successfully",
