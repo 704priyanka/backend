@@ -28,12 +28,11 @@ const create = async function (req, res) {
       applicationFees,
       courseName,
     } = body;
+
     const applicationOffer = {
       color,
-      status: 2,
       ...body,
     };
-    console.log(applicationOffer);
     if (!studentID || !agentID) {
       return res.status(400).send({
         message: "Important field missing",
@@ -63,7 +62,7 @@ const create = async function (req, res) {
       return res.status(500).send({
         message: "Agent with given id doesn't exist",
       });
-    } else if (agentFound.verified === false) {
+    } else if (agentFound.verified === true) {
       return res.status(500).send({
         message:
           "Agent with given id doesn't has verified and needs to add required documents",
@@ -73,8 +72,7 @@ const create = async function (req, res) {
       applicationOffer.student = studentFound.id;
       applicationOffer.agent = agentFound.id;
       const applicationCreated = await Application.create(applicationOffer);
-      agentFound.applications.push(applicationCreated);
-      agentFound.save();
+
       studentFound.previousApplications.push(applicationCreated);
 
       studentFound.save((err, studentUpdated) => {
