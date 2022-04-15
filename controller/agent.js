@@ -1,10 +1,6 @@
 const Student = require("../models/student");
 const Agent = require("../models/agent");
-const Applcation = require("../models/applications");
 const AgentDoc = require("../models/agentDoc");
-const agent = require("../models/agent");
-const student = require("../models/student");
-
 var create = async function (req, res) {
   try {
     let body = req.body;

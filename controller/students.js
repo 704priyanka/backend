@@ -1,7 +1,7 @@
 const Student = require("../models/student");
 const Agent = require("../models/agent");
 const Application = require("../models/applications");
-const studentDoc = require("../models/studentDoc");
+const StudentDoc = require("../models/studentDoc");
 
 var create = async function (req, res) {
   let body = req.body;
@@ -169,7 +169,7 @@ const createDoc = async (req, res) => {
         });
         doc.save((err, result) => {
           if (result) {
-            studentDoc.find(
+            StudentDoc.find(
               {
                 studentID: studentID,
               },
@@ -220,7 +220,7 @@ const updateDoc = (req, res) => {
     if (!studentID || !documentID || !name) {
       throw "One of Important field missing studentID , DocumentId or Name";
     }
-    studentDoc.findOneAndUpdate(
+    StudentDoc.findOneAndUpdate(
       { _id: documentID },
       { name },
       { new: true },
@@ -256,7 +256,7 @@ const deleteDoc = async (req, res) => {
         //filter student docs to remove required doc
         (doc) => doc._id != documentID
       );
-      studentDoc.findByIdAndDelete(documentID, (err, document) => {
+      StudentDoc.findByIdAndDelete(documentID, (err, document) => {
         if (err) {
           return res.status(500).send(err);
         }
