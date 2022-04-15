@@ -46,10 +46,12 @@ const AgentsSchema = new mongoose.Schema({
     required: true,
     default: 0,
   },
-  applications: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "applications",
-  },
+  applications: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "applications",
+    },
+  ],
   documents: [
     {
       type: mongoose.Schema.Types.ObjectId,
