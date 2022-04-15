@@ -50,6 +50,9 @@ const ApplicationSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    status: {
+      type: Number,
+    },
   },
   {
     timestamps: true,
