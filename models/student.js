@@ -73,4 +73,4 @@ const StudentSchema = new mongoose.Schema({
 });
 
 /////////////////////////////////////////////////////
-module.exports = mongoose.model("Student", StudentSchema);
+module.exports = mongoose.model("students", StudentSchema);
