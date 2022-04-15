@@ -2,7 +2,6 @@ const Student = require("../models/student");
 const Agent = require("../models/agent");
 const Application = require("../models/applications");
 const studentDoc = require("../models/studentDoc");
-const StudentDoc = require("../models/studentDoc.js");
 
 var create = async function (req, res) {
   let body = req.body;
@@ -27,7 +26,7 @@ var create = async function (req, res) {
 
   //find student exists
   Student.findOne({ studentID })
-    .populate("documents") //find student in document collection
+    .populate("studentDoc") //find student in document collection
     .populate({
       //find student in application submitted
       path: "previousApplications",
