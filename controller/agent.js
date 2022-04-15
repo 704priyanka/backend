@@ -24,13 +24,11 @@ var create = async function (req, res) {
           match: { agent: agentID },
         });
         if (studentFound) {
-          return res
-            .status(200)
-            .send({
-              message: "data retrieved",
-              studentdata: studentFound,
-              agent: agentFound,
-            });
+          return res.status(200).send({
+            message: "data retrieved",
+            studentdata: studentFound,
+            agent: agentFound,
+          });
         } else {
           return res
             .status(500)
@@ -56,13 +54,11 @@ var create = async function (req, res) {
               })
               .exec((err, studentFound) => {
                 if (studentFound) {
-                  return res
-                    .status(200)
-                    .send({
-                      message: "data sucessfully created",
-                      studentdata: studentFound,
-                      agent: agentFound,
-                    });
+                  return res.status(200).send({
+                    message: "data sucessfully created",
+                    studentdata: studentFound,
+                    agent: doc,
+                  });
                 } else {
                   return res
                     .status(500)
