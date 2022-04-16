@@ -78,23 +78,44 @@ var create = async function (req, res) {
   }
 };
 
+const agentDataUpdate = async (req, res) => {
+  try {
+    const { agentID } = req.body;
+    if (!agentID) {
+      throw "agentID missing";
+    }
+    const data = req.body;
+    delete data.agentID;
+    const agentData = await Agent.findOneAndUpdate({ agentID }, data, {
+      new: true,
+    });
+    if (agentData) {
+      return res.status(200).send({
+        message: "successfully updated",
+        data: agentData,
+      });
+    } else {
+      return res
+        .status(404)
+        .send({ message: "Agent with given ID doesnt exist" });
+    }
+  } catch (e) {
+    return res.status(404).send(e);
+  }
+};
+
 const getStudentDoc = async (req, res) => {
   try {
     const { agentID, studentID } = req.body;
     if (!agentID || !studentID) {
       throw "One of important field missing AgentID or StudentID";
     }
-
     const agentData = await Agent.findOne({ agentID });
     console.log(agentData.documents);
     if (!agentData) {
       throw "Agent with given id doesn't exist";
     } else {
-      if (
-        agentData.documents.license &&
-        agentData.documents.registrationCertificate &&
-        agentData.documents.personalID
-      ) {
+      if (agentData.verified) {
         const studentData = await Student.findOne({ studentID });
         if (!studentData) {
           throw "Student with given id doesnt exist";
@@ -226,7 +247,7 @@ const agentDeleteDoc = async (req, res) => {
     agentData.documents.filter((doc) => {
       return doc != documentID;
     });
-    if (!agentData) {
+    if (!gentData) {
       throw "agent with agentID doesnt exist";
     } else {
       AgentDoc.findByIdAndDelete(documentID, (err, document) => {
@@ -270,4 +291,5 @@ module.exports = {
   getStudentDoc,
   agentDeleteDoc,
   updateAgentDoc,
+  agentDataUpdate,
 };
