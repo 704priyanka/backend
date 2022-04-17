@@ -240,18 +240,23 @@ const updateDoc = (req, res) => {
 
 const deleteDoc = async (req, res) => {
   try {
+    console.log("hello");
+    console.log(req.body);
     const { studentID, documentID } = req.body;
     //check if data is correct
     if (!studentID || !documentID) {
       throw "studentID or DocumentID missing";
     }
     const studentData = await Student.findOne({ studentID: studentID }); //find student
+    console.log(studentData);
     if (!studentData) {
       throw "student with studentID doesnt exist";
     } else {
-      studentData.documents((doc) => {
+      console.log(studentData.documents);
+      studentData.documents = studentData.documents.filter((doc) => {
         return doc != documentID;
       });
+      console.log(studentData.documents);
       StudentDoc.findByIdAndDelete(documentID, (err, document) => {
         if (err) {
           return res.status(500).send(err);
