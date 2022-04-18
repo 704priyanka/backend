@@ -252,9 +252,11 @@ const deleteDoc = async (req, res) => {
     if (!studentData) {
       throw "student with studentID doesnt exist";
     } else {
-      studentData.documents = studentData.documents.filter((doc) => {
+      console.log(studentData.documents);
+      studentData.documents = await studentData.documents.filter((doc) => {
         return doc != documentID;
       });
+      console.log(studentData.documents);
       StudentDoc.findByIdAndDelete(documentID, (err, document) => {
         if (err) {
           return res.status(500).send(err);

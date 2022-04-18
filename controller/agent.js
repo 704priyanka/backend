@@ -247,7 +247,7 @@ const agentDeleteDoc = async (req, res) => {
       throw "studentID or DocumentID missing";
     }
     const agentData = await Agent.findOne({ AgentID: agentID }); //find agent
-    agentData.document = agentData.documents.filter((doc) => {
+    agentData.documents = await agentData.documents.filter((doc) => {
       return doc != documentID;
     });
     if (!agentData) {
