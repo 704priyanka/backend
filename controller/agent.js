@@ -276,7 +276,15 @@ const agentDeleteDoc = async (req, res) => {
               }
             });
           } else {
-            return res.status(200).send("deleted successfully");
+            agentData.save((err, doc) => {
+              if (doc) {
+                return res
+                  .status(200)
+                  .send({ message: "Delete succesfully", data: doc });
+              } else {
+                return res.status(500).send(err);
+              }
+            });
           }
         } else {
           return res.status(404).send("Document doesnt exist");
