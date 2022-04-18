@@ -19,14 +19,16 @@ var create = async function (req, res) {
         const studentFound = await Student.find({
           countryLookingFor: countryLookingFor,
           verified: true,
-        }).populate({
-          path: "previousApplications",
+        })
+          .populate("documents")
+          .populate({
+            path: "previousApplications",
 
-          populate: {
-            path: "agent",
-            match: { agentID: agentID },
-          },
-        });
+            populate: {
+              path: "agent",
+              match: { agentID: agentID },
+            },
+          });
 
         if (studentFound) {
           for (var item of studentFound) {
