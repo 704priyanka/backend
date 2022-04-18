@@ -16,7 +16,7 @@ const studentDocSchema = new mongoose.Schema({
   },
   studentID: {
     type: String,
-    ref: "students",
+    ref: "student",
     required: true,
   },
 });
