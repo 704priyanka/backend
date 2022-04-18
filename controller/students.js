@@ -2,8 +2,6 @@ const Student = require("../models/student");
 const Agent = require("../models/agent");
 const Application = require("../models/applications");
 const StudentDoc = require("../models/studentDoc");
-const { response } = require("express");
-const { default: mongoose } = require("mongoose");
 
 var create = async function (req, res) {
   let body = req.body;
@@ -37,25 +35,7 @@ var create = async function (req, res) {
       if (error) {
         return res.status(500).send({ error2: error.message });
       } //retreive all the agent for the student
-      else if (studentFound && countryLookingFor == "notSure") {
-        Agent.find({ verified: true }, (error, agents) => {
-          if (error) {
-            return res.send(500).send({ error3: error.message });
-          } else if (agents.length == 0) {
-            return res.status(200).send({
-              message: "Successfully retrieved the data",
-              student: studentFound,
-              agents: "NO verfied agent available",
-            });
-          } else {
-            return res.status(200).send({
-              message: "Successfully retrieved the data",
-              student: studentFound,
-              agents: agents,
-            });
-          }
-        });
-      } //retreive all the agent for specific country
+      //retreive all the agent for specific country
       else if (studentFound) {
         Agent.find(
           { countryLookingFor: countryLookingFor, verified: true },

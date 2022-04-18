@@ -70,6 +70,10 @@ const StudentSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  about: {
+    type: String,
+    default: false,
+  },
 });
 
 module.exports = mongoose.model("student", StudentSchema);
