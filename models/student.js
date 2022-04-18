@@ -70,9 +70,10 @@ const StudentSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
-  about: {
+  bio: {
     type: String,
-    default: false,
+    required: false,
+    default: null,
   },
 });
 
