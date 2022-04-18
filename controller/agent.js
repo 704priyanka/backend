@@ -21,18 +21,26 @@ var create = async function (req, res) {
           verified: true,
         }).populate({
           path: "previousApplications",
-          match: { agent: agentID },
+
+          populate: {
+            path: "agent",
+            match: { agentID: agentID },
+          },
         });
+
         if (studentFound) {
+          //console.log(studentFound);
           return res.status(200).send({
             message: "data retrieved",
             studentdata: studentFound,
             agent: agentFound,
           });
         } else {
-          return res
-            .status(500)
-            .send({ message: "no verified student available" });
+          return res.status(500).send({
+            message: "no verified student available",
+
+            agent: agentFound,
+          });
         }
       } else {
         const newAgent = await Agent({
@@ -50,7 +58,10 @@ var create = async function (req, res) {
             })
               .populate({
                 path: "previousApplications",
-                match: { agent: agentID },
+                populate: {
+                  path: "agent",
+                  match: { agentID: agentID },
+                },
               })
               .exec((err, studentFound) => {
                 if (studentFound) {
@@ -60,9 +71,10 @@ var create = async function (req, res) {
                     agent: doc,
                   });
                 } else {
-                  return res
-                    .status(500)
-                    .send({ message: "no verified student available" });
+                  return res.status(500).send({
+                    message: "no verified student available",
+                    agent: agentFound,
+                  });
                 }
               });
           })
@@ -111,7 +123,7 @@ const getStudentDoc = async (req, res) => {
       throw "One of important field missing AgentID or StudentID";
     }
     const agentData = await Agent.findOne({ agentID });
-    console.log(agentData.documents);
+
     if (!agentData) {
       throw "Agent with given id doesn't exist";
     } else {

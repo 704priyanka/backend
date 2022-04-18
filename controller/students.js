@@ -299,6 +299,7 @@ const addApplication = async function (req, res) {
           message: `student does not exists`,
         });
       }
+      console.log(studentFound);
 
       if (studentFound.verified == true) {
         const agentFound = await Agent.findOne({ agentID: agentID });
