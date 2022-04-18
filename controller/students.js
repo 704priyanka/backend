@@ -220,16 +220,19 @@ const updateDoc = (req, res) => {
       throw "One of Important field missing studentID , DocumentId or Name";
     }
     StudentDoc.findOneAndUpdate(
-      { _id: documentID },
+      { _id: documentID, studentID: studentID },
       { name },
       { new: true },
       (err, result) => {
         if (err) {
-          return res.status(500).send(err);
-        } else {
+          return res.status(404).send(err);
+        }
+        if (result) {
           return res
             .status(200)
             .send({ message: "document updated successfully", data: result });
+        } else {
+          return res.status(404).send({ message: "Document not found" });
         }
       }
     );
@@ -251,6 +254,11 @@ const deleteDoc = async (req, res) => {
     if (!studentData) {
       throw "student with studentID doesnt exist";
     } else {
+      console.log(studentData.documents);
+      studentData.documents = await studentData.documents.filter((doc) => {
+        return doc != documentID;
+      });
+      console.log(studentData.documents);
       StudentDoc.findByIdAndDelete(documentID, (err, document) => {
         if (err) {
           return res.status(500).send(err);
@@ -269,6 +277,16 @@ const deleteDoc = async (req, res) => {
                   data: doc,
                 };
                 return res.status(200).send(response);
+              } else {
+                return res.status(500).send(err);
+              }
+            });
+          } else {
+            studentData.save((err, doc) => {
+              if (doc) {
+                return res
+                  .status(200)
+                  .send({ message: "Delete succesfully", data: doc });
               } else {
                 return res.status(500).send(err);
               }
@@ -304,6 +322,7 @@ const addApplication = async function (req, res) {
       }
       console.log(studentFound.verified);
 
+<<<<<<< HEAD
       if (studentFound.verified == true) {
         const agentFound = await Agent.findOne({ agentID });
         if (!agentFound) {
@@ -317,6 +336,53 @@ const addApplication = async function (req, res) {
 
             .exec((err, applicationFound) => {
               if (err || !applicationFound) {
+=======
+        if (foundApplication >= 1) {
+          return res.status(200).send({
+            message: "already  accepted the application",
+          });
+        }
+        Application.findById(applicationID)
+          .populate("student")
+          .populate("agent")
+          .exec((err, applicationFound) => {
+            if (err || !applicationFound) {
+              return res.status(500).send({
+                message: "Applcation with given id not found",
+                err: err ? err : "Server can't update",
+              });
+            } else {
+              if (
+                applicationFound.agent.agentID === agentID &&
+                applicationFound.student.studentID === studentID
+              ) {
+                applicationFound["accepted"] = true;
+                applicationFound.status = 3;
+                applicationFound.save((err, applicationUpdated) => {
+                  if (err || !applicationUpdated) {
+                    return res.status(400).send({
+                      message:
+                        "Somethiing went wrong while updating the application",
+                      err: err ? err : "Server can't update",
+                    });
+                  } else {
+                    Agent.findOne({
+                      agentID: agentID,
+                      application: applicationID,
+                    }).then((doc) => {
+                      if (doc) {
+                        doc.applicationsHandled = +1;
+                        doc.save().then((docs) => {});
+                      }
+                    });
+                    res.status(200).send({
+                      message: "Succussefully accepted the application",
+                      data: applicationUpdated,
+                    });
+                  }
+                });
+              } else {
+>>>>>>> 02e7c0e05dd8971c808ac6a820a912921c0766ad
                 return res.status(500).send({
                   message: "Applcation with given id not found",
                   err: err ? err : "Server can't update",
