@@ -218,16 +218,19 @@ const updateDoc = (req, res) => {
       throw "One of Important field missing studentID , DocumentId or Name";
     }
     StudentDoc.findOneAndUpdate(
-      { _id: documentID },
+      { _id: documentID, studentID: studentID },
       { name },
       { new: true },
       (err, result) => {
         if (err) {
-          return res.status(500).send(err);
-        } else {
+          return res.status(404).send(err);
+        }
+        if (result) {
           return res
             .status(200)
             .send({ message: "document updated successfully", data: result });
+        } else {
+          return res.status(404).send({ message: "Document not found" });
         }
       }
     );
@@ -240,8 +243,6 @@ const updateDoc = (req, res) => {
 
 const deleteDoc = async (req, res) => {
   try {
-    console.log("hello");
-    console.log(req.body);
     const { studentID, documentID } = req.body;
     //check if data is correct
     if (!studentID || !documentID) {
@@ -322,7 +323,6 @@ const addApplication = async function (req, res) {
         Application.findById(applicationID)
           .populate("student")
           .populate("agent")
-
           .exec((err, applicationFound) => {
             if (err || !applicationFound) {
               return res.status(500).send({
@@ -335,13 +335,12 @@ const addApplication = async function (req, res) {
                 applicationFound.student.studentID === studentID
               ) {
                 applicationFound["accepted"] = true;
-
                 applicationFound.status = 3;
                 applicationFound.save((err, applicationUpdated) => {
                   if (err || !applicationUpdated) {
                     return res.status(400).send({
                       message:
-                        "Somethiing went wrong while updatin the application",
+                        "Somethiing went wrong while updating the application",
                       err: err ? err : "Server can't update",
                     });
                   } else {

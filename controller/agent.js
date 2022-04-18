@@ -218,16 +218,19 @@ const updateAgentDoc = async (req, res) => {
       throw "One of Important field missing agentID , DocumentId or Name";
     }
     AgentDoc.findOneAndUpdate(
-      { _id: documentID },
+      { _id: documentID, agentID: agentID },
       { name },
       { new: true },
       (err, result) => {
         if (err) {
           return res.status(500).send(err);
-        } else {
+        }
+        if (result) {
           return res
             .status(200)
             .send({ message: "document updated successfully", data: result });
+        } else {
+          return res.status(404).send({ message: "document not found" });
         }
       }
     );
