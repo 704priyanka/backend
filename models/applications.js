@@ -22,12 +22,12 @@ const ApplicationSchema = new mongoose.Schema({
     required: true,
   },
   student: {
-    type: String,
+    type: mongoose.Schema.Types.ObjectId,
     ref: "student",
     required: true,
   },
   agent: {
-    type: String,
+    type: mongoose.Schema.Types.ObjectId,
     ref: "agents",
     required: true,
   },

@@ -70,8 +70,8 @@ const create = async function (req, res) {
         data: agentFound,
       });
     } else {
-      applicationOffer.student = studentID;
-      applicationOffer.agent = agentID;
+      applicationOffer.student = studentFound.id;
+      applicationOffer.agent = agentFound.id;
       const applicationCreated = await Application.create(applicationOffer);
       applicationCreated
         .save()
