@@ -27,10 +27,14 @@ var create = async function (req, res) {
   //find student exists
   Student.findOne({ studentID })
     .populate("documents") //find student in document collection
-    .populate(
+    .populate({
       //find student in application submitted
-      "previousApplications"
-    )
+      path: "previousApplications",
+      populate: {
+        path: "agent",
+        select: "agentID",
+      },
+    })
     .exec((error, studentFound) => {
       if (error) {
         return res.status(500).send({ error2: error.message });
