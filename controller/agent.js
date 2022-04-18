@@ -29,7 +29,15 @@ var create = async function (req, res) {
         });
 
         if (studentFound) {
-          //console.log(studentFound);
+          for (var item of studentFound) {
+            for (var key in item.previousApplications) {
+              if (key.agent == null) {
+                item.previousApplications.splice(key, 1);
+              }
+            }
+          }
+
+          console.log(studentFound);
           return res.status(200).send({
             message: "data retrieved",
             studentdata: studentFound,
