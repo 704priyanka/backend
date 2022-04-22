@@ -32,14 +32,15 @@ var create = async function (req, res) {
 
         if (studentFound) {
           for (var item of studentFound) {
-            for (var key in item.previousApplications) {
-              if (key.agent == null) {
-                item.previousApplications.splice(key, 1);
+            for (var i = 0; i < item.previousApplications.length; i++) {
+              if (item.previousApplications[i].agent === null) {
+                item.previousApplications.splice(i, 1);
+                i--;
               }
             }
           }
 
-          console.log(studentFound);
+          //console.log(studentFound);
           return res.status(200).send({
             message: "data retrieved",
             studentdata: studentFound,
@@ -75,6 +76,13 @@ var create = async function (req, res) {
               })
               .exec((err, studentFound) => {
                 if (studentFound) {
+                  for (var item of studentFound) {
+                    for (var key in item.previousApplications) {
+                      if (key.agent == null) {
+                        item.previousApplications.splice(key, 1);
+                      }
+                    }
+                  }
                   return res.status(200).send({
                     message: "data sucessfully created",
                     studentdata: studentFound,
