@@ -31,6 +31,16 @@ const ApplicationSchema = new mongoose.Schema({
     ref: "agents",
     required: true,
   },
+  favourite: {
+    type: Boolean,
+    default: false,
+  },
+  progress: {
+    type: Number,
+    default: 0,
+    max: 4,
+    min: 0,
+  },
   description: {
     type: String,
     required: false,
