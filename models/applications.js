@@ -38,7 +38,7 @@ const ApplicationSchema = new mongoose.Schema({
   progress: {
     type: Number,
     default: 0,
-    max: 4,
+    max: 3,
     min: 0,
   },
   description: {
