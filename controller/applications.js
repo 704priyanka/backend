@@ -123,7 +123,7 @@ const favourite = async function (req, res) {
   try {
     const id = req.body.applicationId; // Aplication ID
     console.log(id);
-    const application = await Application.findOne({ id });
+    const application = await Application.findById(id);
     application.favourite = !application.favourite;
     await application.save();
     return res.send(application);
@@ -138,7 +138,8 @@ const favourite = async function (req, res) {
 const progress = async function (req, res) {
   try {
     const { applicationId, progress } = req.body;
-    const application = await Application.findOne({ id: applicationId });
+    const application = await Application.findById(applicationId);
+
     if (!application) {
       return res.status(500).send({
         message: "Can't able to update Progress",
