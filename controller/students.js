@@ -2,8 +2,6 @@ const Student = require("../models/student");
 const Agent = require("../models/agent");
 const Application = require("../models/applications");
 const StudentDoc = require("../models/studentDoc");
-// const ChatDoc = require("../models/chatDocs");
-const { findOne } = require("../models/applications");
 
 var create = async function (req, res) {
   try {
@@ -378,26 +376,6 @@ const addApplication = async function (req, res) {
   }
 };
 
-// make another route
-// const addChatDoc = async (req, res) => {
-// 	const { chatId, docData } = req.body;
-// 	let data = await ChatDoc.findOne({ chatId });
-// 	if (!data) {
-// 		data = new ChatDoc({
-// 			chatId,
-// 		});
-// 	}
-// 	data.chatDoc.push(docData);
-// 	data.save();
-// 	return res.send(data);
-// };
-
-// const getChatDoc = async (req, res) => {
-// 	const { chatId } = req.body;
-// 	const data = await ChatDoc.findOne({ chatId });
-// 	return res.send({ data: data.chatDoc });
-// };
-
 module.exports = {
   create,
   createDoc,
@@ -405,6 +383,4 @@ module.exports = {
   deleteDoc,
   addApplication,
   studentDataUpdate,
-  // addChatDoc,
-  // getChatDoc,
 };
