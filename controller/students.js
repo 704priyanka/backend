@@ -311,7 +311,7 @@ const addApplication = async function (req, res) {
       console.log(studentFound);
       if (studentFound.previousApplications.length === 3) {
         return res
-          .status(500)
+          .status(202)
           .send({ message: "Cannot Process more than 3 applications" });
       }
       if (studentFound.verified == true) {
