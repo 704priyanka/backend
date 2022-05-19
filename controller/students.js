@@ -309,7 +309,11 @@ const addApplication = async function (req, res) {
         });
       }
       console.log(studentFound);
-
+      if (studentFound.previousApplications.length === 3) {
+        return res
+          .status(500)
+          .send({ message: "Cannot Process more than 3 applications" });
+      }
       if (studentFound.verified == true) {
         const agentFound = await Agent.findOne({ agentID: agentID });
         if (!agentFound) {
